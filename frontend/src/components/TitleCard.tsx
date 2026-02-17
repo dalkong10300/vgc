@@ -1,31 +1,44 @@
-import { Category } from "@/types";
-
 interface TitleCardProps {
   title: string;
-  category: Category;
+  postId: number;
+  likeCount: number;
+  viewCount: number;
 }
 
-const colorMap: Record<Category, { bg: string; text: string }> = {
-  [Category.HUMOR]: { bg: "#FFE4B5", text: "#8B6914" },
-  [Category.NEWS]: { bg: "#B0C4DE", text: "#2F4F4F" },
-  [Category.DOG]: { bg: "#FFDAB9", text: "#8B4513" },
-  [Category.CAT]: { bg: "#D8BFD8", text: "#4B0082" },
-};
+const palette = [
+  { bg: "#FFE4B5", text: "#8B6914" },
+  { bg: "#B0C4DE", text: "#2F4F4F" },
+  { bg: "#FFDAB9", text: "#8B4513" },
+  { bg: "#D8BFD8", text: "#4B0082" },
+  { bg: "#B5EAD7", text: "#2D6A4F" },
+  { bg: "#FCCDE2", text: "#8B2252" },
+  { bg: "#C1E1FF", text: "#1B4965" },
+  { bg: "#FFF3B0", text: "#7A6C00" },
+  { bg: "#E2C9FF", text: "#5B2C8B" },
+  { bg: "#FFD6D6", text: "#8B3A3A" },
+];
 
-export default function TitleCard({ title, category }: TitleCardProps) {
-  const colors = colorMap[category];
+export default function TitleCard({ title, postId, likeCount, viewCount }: TitleCardProps) {
+  const colors = palette[postId % palette.length];
 
   return (
     <div
-      className="aspect-square rounded-xl flex items-center justify-center p-6"
+      className="aspect-square rounded-xl flex flex-col items-center justify-center p-4 relative"
       style={{ backgroundColor: colors.bg }}
     >
       <p
-        className="text-center font-semibold text-lg line-clamp-3 leading-relaxed"
+        className="text-center font-semibold text-sm sm:text-lg line-clamp-3 leading-relaxed"
         style={{ color: colors.text }}
       >
         {title}
       </p>
+      <div
+        className="absolute bottom-2 right-2 flex gap-2 text-[10px] sm:text-xs opacity-70"
+        style={{ color: colors.text }}
+      >
+        <span>♥ {likeCount}</span>
+        <span>👁 {viewCount}</span>
+      </div>
     </div>
   );
 }

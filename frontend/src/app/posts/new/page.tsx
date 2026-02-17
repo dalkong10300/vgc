@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { createPost } from "@/lib/api";
 
 const categories = [
@@ -25,8 +24,14 @@ export default function NewPostPage() {
     const file = e.target.files?.[0] || null;
     setImageFile(file);
     if (file) {
+      console.log("File selected:", file.name, file.type, file.size);
       const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        console.log("FileReader result type:", typeof result, "starts with:", result?.substring(0, 30));
+        setImagePreview(result);
+      };
+      reader.onerror = (err) => console.error("FileReader error:", err);
       reader.readAsDataURL(file);
     } else {
       setImagePreview(null);
@@ -113,17 +118,16 @@ export default function NewPostPage() {
           </label>
           <input
             type="file"
-            accept="image/*"
+            accept=".png,.jpg,.jpeg"
             onChange={handleImageChange}
             className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
           />
           {imagePreview && (
-            <div className="mt-3 relative w-full max-w-sm aspect-square rounded-xl overflow-hidden">
-              <Image
+            <div className="mt-3 w-full max-w-sm rounded-xl overflow-hidden">
+              <img
                 src={imagePreview}
                 alt="미리보기"
-                fill
-                className="object-cover"
+                className="w-full rounded-xl object-cover"
               />
             </div>
           )}

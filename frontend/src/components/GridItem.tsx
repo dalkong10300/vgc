@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Post } from "@/types";
+import { IMAGE_BASE_URL } from "@/lib/api";
 import TitleCard from "./TitleCard";
 
 interface GridItemProps {
@@ -15,23 +15,18 @@ export default function GridItem({ post }: GridItemProps) {
     >
       {post.imageUrl ? (
         <div className="relative aspect-square">
-          <Image
-            src={post.imageUrl}
+          <img
+            src={`${IMAGE_BASE_URL}${post.imageUrl}`}
             alt={post.title}
-            fill
-            className="object-cover rounded-xl"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
+            className="w-full h-full object-cover rounded-xl"
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 rounded-b-xl">
-            <p className="text-white text-sm font-medium truncate">{post.title}</p>
-            <div className="flex gap-3 text-xs text-gray-300 mt-1">
-              <span>♥ {post.likeCount}</span>
-              <span>👁 {post.viewCount}</span>
-            </div>
+          <div className="absolute bottom-2 right-2 flex gap-2 text-[10px] sm:text-xs text-white bg-black/50 rounded-full px-2 py-0.5">
+            <span>♥ {post.likeCount}</span>
+            <span>👁 {post.viewCount}</span>
           </div>
         </div>
       ) : (
-        <TitleCard title={post.title} category={post.category} />
+        <TitleCard title={post.title} postId={post.id} likeCount={post.likeCount} viewCount={post.viewCount} />
       )}
     </Link>
   );

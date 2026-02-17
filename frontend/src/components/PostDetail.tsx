@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { Post, Category } from "@/types";
-import { getPost, toggleLike } from "@/lib/api";
+import { getPost, toggleLike, IMAGE_BASE_URL } from "@/lib/api";
 import CommentSection from "./CommentSection";
 
 interface PostDetailProps {
@@ -78,13 +77,11 @@ export default function PostDetail({ postId }: PostDetailProps) {
       </div>
 
       {post.imageUrl && (
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-          <Image
-            src={post.imageUrl}
+        <div className="w-full rounded-xl overflow-hidden">
+          <img
+            src={`${IMAGE_BASE_URL}${post.imageUrl}`}
             alt={post.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 768px"
+            className="w-full rounded-xl"
           />
         </div>
       )}
