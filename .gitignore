@@ -1,0 +1,13 @@
+# Dependency directories
+node_modules/
+.next/
+out/
+build/
+bin/
+
+# IDE files
+.idea/
+.vscode/
+
+# System files
+.DS_Store
