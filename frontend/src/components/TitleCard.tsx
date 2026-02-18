@@ -23,7 +23,7 @@ export default function TitleCard({ title, postId, likeCount, viewCount }: Title
 
   return (
     <div
-      className="aspect-square rounded-xl flex flex-col items-center justify-center p-4 relative"
+      className="aspect-[4/5] flex flex-col items-center justify-center p-4 relative"
       style={{ backgroundColor: colors.bg }}
     >
       <p

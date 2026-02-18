@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { createPost, getCategories } from "@/lib/api";
+import { useRouter, useParams } from "next/navigation";
+import { getPost, getCategories, updatePost, IMAGE_BASE_URL } from "@/lib/api";
 import { CategoryInfo } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import CategoryRequestModal from "@/components/CategoryRequestModal";
 
-export default function NewPostPage() {
+export default function EditPostPage() {
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
+  const params = useParams();
+  const postId = Number(params.id);
+  const { isLoggedIn, nickname } = useAuth();
+
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
@@ -17,6 +20,7 @@ export default function NewPostPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<CategoryInfo[]>([
     { id: 0, name: "HUMOR", label: "유머", color: "yellow" },
     { id: 0, name: "NEWS", label: "시사", color: "blue" },
@@ -28,20 +32,32 @@ export default function NewPostPage() {
   useEffect(() => {
     if (!isLoggedIn) {
       router.replace("/login");
+      return;
     }
-  }, [isLoggedIn, router]);
 
-  useEffect(() => {
     getCategories()
       .then((cats) => {
-        if (cats.length > 0) {
-          setCategories(cats);
-          if (!category) setCategory(cats[0].name);
-        }
+        if (cats.length > 0) setCategories(cats);
       })
       .catch(console.error);
-    if (!category) setCategory("HUMOR");
-  }, []);
+
+    getPost(postId)
+      .then((post) => {
+        if (post.authorNickname !== nickname) {
+          alert("본인이 작성한 글만 수정할 수 있습니다.");
+          router.replace(`/posts/${postId}`);
+          return;
+        }
+        setTitle(post.title);
+        setContent(post.content);
+        setCategory(post.category);
+        if (post.imageUrl) {
+          setImagePreview(`${IMAGE_BASE_URL}${post.imageUrl}`);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [postId, isLoggedIn, nickname, router]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -71,11 +87,11 @@ export default function NewPostPage() {
         formData.append("image", imageFile);
       }
 
-      const newPost = await createPost(formData);
-      router.push(`/posts/${newPost.id}`);
+      await updatePost(postId, formData);
+      router.push(`/posts/${postId}`);
     } catch (error) {
-      console.error("Failed to create post:", error);
-      alert("게시글 작성에 실패했습니다.");
+      console.error("Failed to update post:", error);
+      alert("게시글 수정에 실패했습니다.");
     } finally {
       setSubmitting(false);
     }
@@ -83,9 +99,17 @@ export default function NewPostPage() {
 
   if (!isLoggedIn) return null;
 
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-10 h-10 border-4 border-gray-300 border-t-orange-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">새 글 쓰기</h1>
+      <h1 className="text-2xl font-bold mb-6">글 수정</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
@@ -176,7 +200,7 @@ export default function NewPostPage() {
             disabled={submitting || !title.trim() || !content.trim()}
             className="px-6 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {submitting ? "등록 중..." : "등록하기"}
+            {submitting ? "수정 중..." : "수정하기"}
           </button>
         </div>
       </form>

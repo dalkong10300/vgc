@@ -68,6 +68,22 @@ public class CategoryService {
         return CategoryResponse.from(saved);
     }
 
+    public CategoryResponse createCategory(String name, String label, String color) {
+        if (categoryRepository.existsByName(name)) {
+            throw new RuntimeException("이미 존재하는 카테고리입니다.");
+        }
+        Category category = new Category(name, label, color);
+        Category saved = categoryRepository.save(category);
+        return CategoryResponse.from(saved);
+    }
+
+    @Transactional
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("카테고리를 찾을 수 없습니다."));
+        categoryRepository.delete(category);
+    }
+
     @Transactional
     public CategoryRequestResponse rejectRequest(Long id, String reason) {
         CategoryRequest request = categoryRequestRepository.findById(id)

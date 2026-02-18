@@ -32,6 +32,32 @@ public class AdminController {
         return user;
     }
 
+    @GetMapping("/categories")
+    public List<CategoryResponse> getCategories(Authentication authentication) {
+        getAdminUser(authentication);
+        return categoryService.getAllCategories();
+    }
+
+    @PostMapping("/categories")
+    public ResponseEntity<CategoryResponse> createCategory(
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        getAdminUser(authentication);
+        String name = body.get("name");
+        String label = body.get("label");
+        String color = body.get("color");
+        return ResponseEntity.ok(categoryService.createCategory(name, label, color));
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Void> deleteCategory(
+            @PathVariable Long id,
+            Authentication authentication) {
+        getAdminUser(authentication);
+        categoryService.deleteCategory(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/category-requests")
     public List<CategoryRequestResponse> getPendingRequests(Authentication authentication) {
         getAdminUser(authentication);

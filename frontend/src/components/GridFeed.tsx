@@ -8,13 +8,33 @@ import SortSelector from "./SortSelector";
 import GridItem from "./GridItem";
 import SkeletonGrid from "./SkeletonGrid";
 
+const CACHE_KEY = "gridFeedCache";
+
+function saveCache(data: { posts: Post[]; category: string | null; sort: string; page: number; hasMore: boolean; scrollY: number }) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch {}
+}
+
+function loadCache(): { posts: Post[]; category: string | null; sort: string; page: number; hasMore: boolean; scrollY: number } | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export default function GridFeed() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [category, setCategory] = useState<string | null>(null);
-  const [sort, setSort] = useState<string>("latest");
-  const [page, setPage] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  const cache = useRef(loadCache());
+  const [posts, setPosts] = useState<Post[]>(cache.current?.posts ?? []);
+  const [category, setCategory] = useState<string | null>(cache.current?.category ?? null);
+  const [sort, setSort] = useState<string>(cache.current?.sort ?? "latest");
+  const [page, setPage] = useState<number>(cache.current?.page ?? 0);
+  const [loading, setLoading] = useState<boolean>(!cache.current);
+  const [hasMore, setHasMore] = useState<boolean>(cache.current?.hasMore ?? true);
+  const [restored, setRestored] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const fetchPosts = useCallback(
@@ -37,13 +57,52 @@ export default function GridFeed() {
     [category, sort]
   );
 
-  // Reset when category or sort changes
+  // Reset when category or sort changes (skip if restoring from cache)
   useEffect(() => {
+    if (cache.current) {
+      setHasMore(cache.current.hasMore);
+      cache.current = null;
+      return;
+    }
     setPage(0);
     setPosts([]);
     setHasMore(true);
     fetchPosts(0, false);
   }, [fetchPosts]);
+
+  // Restore scroll position after cached posts render
+  useEffect(() => {
+    if (!restored && posts.length > 0) {
+      const raw = sessionStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (cached.scrollY) {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, cached.scrollY);
+          });
+        }
+      }
+      setRestored(true);
+    }
+  }, [posts, restored]);
+
+  // Save state before navigating away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveCache({ posts, category, sort, page, hasMore, scrollY: window.scrollY });
+    };
+
+    const handleClick = () => {
+      saveCache({ posts, category, sort, page, hasMore, scrollY: window.scrollY });
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("click", handleClick);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("click", handleClick);
+    };
+  }, [posts, category, sort, page, hasMore]);
 
   // Infinite scroll
   useEffect(() => {
@@ -78,7 +137,7 @@ export default function GridFeed() {
         <SkeletonGrid />
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
             {posts.map((post) => (
               <GridItem key={post.id} post={post} />
             ))}
@@ -86,7 +145,7 @@ export default function GridFeed() {
 
           {loading && posts.length > 0 && (
             <div className="flex justify-center py-8">
-              <div className="w-8 h-8 border-4 border-gray-300 border-t-teal-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-gray-300 border-t-orange-600 rounded-full animate-spin" />
             </div>
           )}
         </>

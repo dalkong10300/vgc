@@ -36,26 +36,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/profile/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/posts/*/bookmark").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/posts/*/bookmark").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/posts/*/like").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/posts/**/comments").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/categories/request").authenticated()
-                .requestMatchers("/api/admin/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/posts/*/like").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/posts/*/comments").authenticated()
-                .anyRequest().permitAll()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // 1. 가장 구체적인 경로를 맨 위로 (인증 필요)
+                        .requestMatchers("/api/profile/**").authenticated()
+                        .requestMatchers("/api/admin/**").authenticated()
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // 2. 카테고리 (카테고리 조회가 우선순위가 높아야 함)
+                        .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/categories/request").authenticated()
+
+                        // 3. 포스트 관련 인증이 필요한 동작들 (경로 패턴을 단순화하거나 명확히 함)
+                        .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/posts/*").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/posts/*/bookmark", "/api/posts/*/like", "/api/posts/*/comments").authenticated()
+
+                        // 4. 포스트 조회 관련 (가장 넓은 범위이므로 아래쪽으로)
+                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+
+                        // 5. 그 외 모든 요청
+                        .anyRequest().permitAll()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

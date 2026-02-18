@@ -112,6 +112,33 @@ public class PostService {
         return response;
     }
 
+    public PostResponse updatePost(Long id, PostRequest request, MultipartFile image, User user) throws IOException {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        if (!post.getAuthor().getId().equals(user.getId())) {
+            throw new RuntimeException("본인이 작성한 글만 수정할 수 있습니다.");
+        }
+
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
+        if (!categoryRepository.existsByName(request.getCategory())) {
+            throw new RuntimeException("존재하지 않는 카테고리입니다.");
+        }
+        post.setCategory(request.getCategory());
+
+        if (image != null && !image.isEmpty()) {
+            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+            Path uploadPath = Paths.get(uploadDir);
+            Files.createDirectories(uploadPath);
+            Files.copy(image.getInputStream(), uploadPath.resolve(fileName));
+            post.setImageUrl("/uploads/" + fileName);
+        }
+
+        Post saved = postRepository.save(post);
+        return PostResponse.from(saved, commentRepository.countByPostId(saved.getId()));
+    }
+
     public boolean isLiked(Long userId, Long postId) {
         return postLikeRepository.existsByUserIdAndPostId(userId, postId);
     }

@@ -1,0 +1,128 @@
+"use client";
+
+import { useState } from "react";
+import { requestCategory } from "@/lib/api";
+
+const COLOR_OPTIONS = [
+  { value: "yellow", label: "노랑" },
+  { value: "blue", label: "파랑" },
+  { value: "orange", label: "주황" },
+  { value: "purple", label: "보라" },
+  { value: "green", label: "초록" },
+  { value: "red", label: "빨강" },
+  { value: "pink", label: "분홍" },
+  { value: "indigo", label: "남색" },
+  { value: "orange", label: "청록" },
+  { value: "gray", label: "회색" },
+];
+
+interface CategoryRequestModalProps {
+  onClose: () => void;
+}
+
+export default function CategoryRequestModal({ onClose }: CategoryRequestModalProps) {
+  const [name, setName] = useState("");
+  const [label, setLabel] = useState("");
+  const [color, setColor] = useState("blue");
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !label.trim()) return;
+
+    setSubmitting(true);
+    try {
+      await requestCategory({ name: name.trim().toUpperCase(), label: label.trim(), color });
+      setSuccess(true);
+    } catch (error) {
+      console.error("Failed to request category:", error);
+      alert("카테고리 요청에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-bold">카테고리 요청</h2>
+
+        {success ? (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              카테고리 요청이 등록되었습니다. 관리자 승인 후 사용할 수 있습니다.
+            </p>
+            <button
+              onClick={onClose}
+              className="w-full py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+            >
+              확인
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                카테고리 코드 (영문)
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="예: TRAVEL"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                표시 이름 (한글)
+              </label>
+              <input
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="예: 여행"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                색상
+              </label>
+              <select
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                {COLOR_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                disabled={submitting || !name.trim() || !label.trim()}
+                className="flex-1 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {submitting ? "요청 중..." : "요청하기"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}

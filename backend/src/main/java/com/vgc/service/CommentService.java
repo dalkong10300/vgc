@@ -7,6 +7,7 @@ import com.vgc.entity.User;
 import com.vgc.repository.CommentRepository;
 import com.vgc.repository.PostRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class CommentService {
         return commentRepository.findByPostIdOrderByCreatedAtDesc(postId);
     }
 
+    @Transactional
     public Comment addComment(Long postId, CommentRequest request, User author) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));

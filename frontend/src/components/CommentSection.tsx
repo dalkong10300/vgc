@@ -63,13 +63,13 @@ export default function CommentSection({ postId }: CommentSectionProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={submitting || !content.trim()}
-              className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {submitting ? "등록 중..." : "댓글 등록"}
             </button>
@@ -78,7 +78,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       ) : (
         <div className="text-center py-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-500">
-            <Link href="/login" className="text-teal-600 hover:underline">
+            <Link href="/login" className="text-orange-600 hover:underline">
               로그인
             </Link>
             {" "}후 댓글을 작성할 수 있습니다.

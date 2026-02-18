@@ -47,6 +47,16 @@ export async function createPost(formData: FormData): Promise<Post> {
   return res.json();
 }
 
+export async function updatePost(id: number, formData: FormData): Promise<Post> {
+  const res = await fetch(`${BASE_URL}/posts/${id}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Failed to update post");
+  return res.json();
+}
+
 export async function toggleLike(id: number): Promise<Post> {
   const res = await fetch(`${BASE_URL}/posts/${id}/like`, {
     method: "POST",
@@ -152,6 +162,37 @@ export async function requestCategory(data: {
   });
   if (!res.ok) throw new Error("Failed to request category");
   return res.json();
+}
+
+export async function getAdminCategories(): Promise<CategoryInfo[]> {
+  const res = await fetch(`${BASE_URL}/admin/categories`, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch categories");
+  return res.json();
+}
+
+export async function createAdminCategory(data: {
+  name: string;
+  label: string;
+  color: string;
+}): Promise<CategoryInfo> {
+  const res = await fetch(`${BASE_URL}/admin/categories`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to create category");
+  return res.json();
+}
+
+export async function deleteAdminCategory(id: number): Promise<void> {
+  const res = await fetch(`${BASE_URL}/admin/categories/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to delete category");
 }
 
 export async function getPendingCategoryRequests(): Promise<

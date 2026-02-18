@@ -53,6 +53,23 @@ public class PostController {
         return postService.createPost(request, image, user);
     }
 
+    @PutMapping("/{id}")
+    public PostResponse updatePost(
+            @PathVariable Long id,
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam("category") String category,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            Authentication authentication) throws Exception {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        PostRequest request = new PostRequest();
+        request.setTitle(title);
+        request.setContent(content);
+        request.setCategory(category);
+        return postService.updatePost(id, request, image, user);
+    }
+
     @GetMapping("/{id}/like")
     public Map<String, Boolean> getLikeStatus(@PathVariable Long id, Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName())

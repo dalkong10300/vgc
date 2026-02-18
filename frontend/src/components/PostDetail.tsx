@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Post, CategoryInfo } from "@/types";
 import { getPost, getCategories, toggleLike, getLikeStatus, toggleBookmark, getBookmarkStatus, IMAGE_BASE_URL } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -20,7 +21,7 @@ const colorClassMap: Record<string, string> = {
   red: "bg-red-100 text-red-800",
   pink: "bg-pink-100 text-pink-800",
   indigo: "bg-indigo-100 text-indigo-800",
-  teal: "bg-teal-100 text-teal-800",
+  orange: "bg-orange-100 text-orange-800",
   gray: "bg-gray-100 text-gray-800",
 };
 
@@ -37,27 +38,26 @@ export default function PostDetail({ postId }: PostDetailProps) {
   const [categories, setCategories] = useState<CategoryInfo[]>(FALLBACK_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, nickname } = useAuth();
 
   useEffect(() => {
     getCategories()
       .then((cats) => { if (cats.length > 0) setCategories(cats); })
       .catch(console.error);
     getPost(postId)
-      .then(setPost)
+      .then((postData) => {
+        setPost(postData);
+        if (isLoggedIn) {
+          getLikeStatus(postId)
+            .then((res) => setPost((prev) => prev ? { ...prev, liked: res.liked } : prev))
+            .catch(console.error);
+          getBookmarkStatus(postId)
+            .then((res) => setBookmarked(res.bookmarked))
+            .catch(console.error);
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [postId]);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      getBookmarkStatus(postId)
-        .then((res) => setBookmarked(res.bookmarked))
-        .catch(console.error);
-      getLikeStatus(postId)
-        .then((res) => setPost((prev) => prev ? { ...prev, liked: res.liked } : prev))
-        .catch(console.error);
-    }
   }, [postId, isLoggedIn]);
 
   const handleLike = async () => {
@@ -86,7 +86,7 @@ export default function PostDetail({ postId }: PostDetailProps) {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-10 h-10 border-4 border-gray-300 border-t-teal-600 rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-gray-300 border-t-orange-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -110,7 +110,17 @@ export default function PostDetail({ postId }: PostDetailProps) {
         >
           {catInfo?.label || post.category}
         </span>
-        <h1 className="text-2xl font-bold mt-3">{post.title}</h1>
+        <div className="flex items-center justify-between mt-3">
+          <h1 className="text-2xl font-bold">{post.title}</h1>
+          {isLoggedIn && nickname === post.authorNickname && (
+            <Link
+              href={`/posts/${post.id}/edit`}
+              className="px-4 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              수정
+            </Link>
+          )}
+        </div>
         <div className="flex gap-4 text-sm text-gray-500 mt-2">
           <span>조회 {post.viewCount}</span>
           <span>좋아요 {post.likeCount}</span>
@@ -152,7 +162,7 @@ export default function PostDetail({ postId }: PostDetailProps) {
             onClick={handleBookmark}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
               bookmarked
-                ? "bg-teal-50 text-teal-600"
+                ? "bg-orange-50 text-orange-600"
                 : "bg-gray-50 text-gray-500 hover:bg-gray-100"
             }`}
           >

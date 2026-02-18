@@ -71,7 +71,7 @@ export default function ProfilePage() {
           onClick={() => setActiveTab("posts")}
           className={`px-6 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
             activeTab === "posts"
-              ? "border-teal-600 text-teal-600"
+              ? "border-orange-600 text-orange-600"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -81,7 +81,7 @@ export default function ProfilePage() {
           onClick={() => setActiveTab("bookmarks")}
           className={`px-6 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
             activeTab === "bookmarks"
-              ? "border-teal-600 text-teal-600"
+              ? "border-orange-600 text-orange-600"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -91,7 +91,7 @@ export default function ProfilePage() {
 
       {loading && posts.length === 0 ? (
         <div className="flex justify-center py-20">
-          <div className="w-10 h-10 border-4 border-gray-300 border-t-teal-600 rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-gray-300 border-t-orange-600 rounded-full animate-spin" />
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
@@ -99,7 +99,7 @@ export default function ProfilePage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
             {posts.map((post) => (
               <GridItem key={post.id} post={post} onBookmarkChange={handleBookmarkChange} />
             ))}

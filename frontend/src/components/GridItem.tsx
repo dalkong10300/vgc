@@ -31,14 +31,14 @@ export default function GridItem({ post, onBookmarkChange }: GridItemProps) {
   return (
     <Link
       href={`/posts/${post.id}`}
-      className="group block rounded-xl overflow-hidden transition-transform duration-200 hover:scale-105 relative"
+      className="group block overflow-hidden transition-transform duration-200 hover:scale-105 relative"
     >
       {isLoggedIn && (
         <button
           onClick={handleBookmarkClick}
           className={`absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full transition-all text-sm ${
             bookmarked
-              ? "bg-teal-500 text-white opacity-100"
+              ? "bg-orange-500 text-white opacity-100"
               : "bg-black/50 text-white opacity-0 group-hover:opacity-100"
           }`}
         >
@@ -46,11 +46,11 @@ export default function GridItem({ post, onBookmarkChange }: GridItemProps) {
         </button>
       )}
       {post.imageUrl ? (
-        <div className="relative aspect-square">
+        <div className="relative aspect-[4/5]">
           <img
             src={`${IMAGE_BASE_URL}${post.imageUrl}`}
             alt={post.title}
-            className="w-full h-full object-cover rounded-xl"
+            className="w-full h-full object-cover"
           />
           <div className="absolute bottom-2 right-2 flex gap-2 text-[10px] sm:text-xs text-white bg-black/50 rounded-full px-2 py-0.5">
             <span>♥ {post.likeCount}</span>
