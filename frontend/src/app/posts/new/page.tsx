@@ -1,37 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createPost } from "@/lib/api";
-
-const categories = [
-  { label: "유머", value: "HUMOR" },
-  { label: "시사", value: "NEWS" },
-  { label: "강아지", value: "DOG" },
-  { label: "고양이", value: "CAT" },
-];
+import { createPost, getCategories } from "@/lib/api";
+import { CategoryInfo } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 export default function NewPostPage() {
   const router = useRouter();
+  const { isLoggedIn } = useAuth();
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("HUMOR");
+  const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [categories, setCategories] = useState<CategoryInfo[]>([
+    { id: 0, name: "HUMOR", label: "유머", color: "yellow" },
+    { id: 0, name: "NEWS", label: "시사", color: "blue" },
+    { id: 0, name: "DOG", label: "강아지", color: "orange" },
+    { id: 0, name: "CAT", label: "고양이", color: "purple" },
+    { id: 0, name: "CHAT", label: "잡담", color: "green" },
+  ]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.replace("/login");
+    }
+  }, [isLoggedIn, router]);
+
+  useEffect(() => {
+    getCategories()
+      .then((cats) => {
+        if (cats.length > 0) {
+          setCategories(cats);
+          if (!category) setCategory(cats[0].name);
+        }
+      })
+      .catch(console.error);
+    if (!category) setCategory("HUMOR");
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setImageFile(file);
     if (file) {
-      console.log("File selected:", file.name, file.type, file.size);
       const reader = new FileReader();
       reader.onload = (event) => {
-        const result = event.target?.result as string;
-        console.log("FileReader result type:", typeof result, "starts with:", result?.substring(0, 30));
-        setImagePreview(result);
+        setImagePreview(event.target?.result as string);
       };
-      reader.onerror = (err) => console.error("FileReader error:", err);
       reader.readAsDataURL(file);
     } else {
       setImagePreview(null);
@@ -62,6 +79,8 @@ export default function NewPostPage() {
     }
   };
 
+  if (!isLoggedIn) return null;
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">새 글 쓰기</h1>
@@ -91,7 +110,7 @@ export default function NewPostPage() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             {categories.map((cat) => (
-              <option key={cat.value} value={cat.value}>
+              <option key={cat.name} value={cat.name}>
                 {cat.label}
               </option>
             ))}

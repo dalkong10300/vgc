@@ -13,6 +13,9 @@ public class PostResponse {
     private int viewCount;
     private LocalDateTime createdAt;
     private int commentCount;
+    private String authorNickname;
+    private boolean bookmarked;
+    private boolean liked;
 
     public static PostResponse from(Post post, int commentCount) {
         PostResponse response = new PostResponse();
@@ -20,11 +23,12 @@ public class PostResponse {
         response.title = post.getTitle();
         response.content = post.getContent();
         response.imageUrl = post.getImageUrl();
-        response.category = post.getCategory().name();
+        response.category = post.getCategory();
         response.likeCount = post.getLikeCount();
         response.viewCount = post.getViewCount();
         response.createdAt = post.getCreatedAt();
         response.commentCount = commentCount;
+        response.authorNickname = post.getAuthor() != null ? post.getAuthor().getNickname() : null;
         return response;
     }
 
@@ -38,4 +42,9 @@ public class PostResponse {
     public int getViewCount() { return viewCount; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public int getCommentCount() { return commentCount; }
+    public String getAuthorNickname() { return authorNickname; }
+    public boolean isBookmarked() { return bookmarked; }
+    public void setBookmarked(boolean bookmarked) { this.bookmarked = bookmarked; }
+    public boolean isLiked() { return liked; }
+    public void setLiked(boolean liked) { this.liked = liked; }
 }

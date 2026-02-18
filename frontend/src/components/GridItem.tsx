@@ -1,18 +1,50 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Post } from "@/types";
-import { IMAGE_BASE_URL } from "@/lib/api";
+import { IMAGE_BASE_URL, toggleBookmark } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import TitleCard from "./TitleCard";
 
 interface GridItemProps {
   post: Post;
+  onBookmarkChange?: (postId: number, bookmarked: boolean) => void;
 }
 
-export default function GridItem({ post }: GridItemProps) {
+export default function GridItem({ post, onBookmarkChange }: GridItemProps) {
+  const { isLoggedIn } = useAuth();
+  const [bookmarked, setBookmarked] = useState(post.bookmarked ?? false);
+
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const res = await toggleBookmark(post.id);
+      setBookmarked(res.bookmarked);
+      onBookmarkChange?.(post.id, res.bookmarked);
+    } catch (error) {
+      console.error("Failed to toggle bookmark:", error);
+    }
+  };
+
   return (
     <Link
       href={`/posts/${post.id}`}
-      className="block rounded-xl overflow-hidden transition-transform duration-200 hover:scale-105"
+      className="group block rounded-xl overflow-hidden transition-transform duration-200 hover:scale-105 relative"
     >
+      {isLoggedIn && (
+        <button
+          onClick={handleBookmarkClick}
+          className={`absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full transition-all text-sm ${
+            bookmarked
+              ? "bg-teal-500 text-white opacity-100"
+              : "bg-black/50 text-white opacity-0 group-hover:opacity-100"
+          }`}
+        >
+          🔖
+        </button>
+      )}
       {post.imageUrl ? (
         <div className="relative aspect-square">
           <img

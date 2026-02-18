@@ -3,6 +3,7 @@ package com.vgc.service;
 import com.vgc.dto.CommentRequest;
 import com.vgc.entity.Comment;
 import com.vgc.entity.Post;
+import com.vgc.entity.User;
 import com.vgc.repository.CommentRepository;
 import com.vgc.repository.PostRepository;
 import org.springframework.stereotype.Service;
@@ -23,13 +24,14 @@ public class CommentService {
         return commentRepository.findByPostIdOrderByCreatedAtDesc(postId);
     }
 
-    public Comment addComment(Long postId, CommentRequest request) {
+    public Comment addComment(Long postId, CommentRequest request, User author) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         Comment comment = new Comment();
         comment.setPost(post);
         comment.setContent(request.getContent());
-        comment.setAuthorName(request.getAuthorName());
+        comment.setAuthorName(author.getNickname());
+        comment.setAuthor(author);
         return commentRepository.save(comment);
     }
 }

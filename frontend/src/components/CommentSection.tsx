@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Comment } from "@/types";
 import { getComments, addComment } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 
 interface CommentSectionProps {
   postId: number;
@@ -24,8 +26,8 @@ function getRelativeTime(dateStr: string): string {
 }
 
 export default function CommentSection({ postId }: CommentSectionProps) {
+  const { isLoggedIn, nickname } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
-  const [authorName, setAuthorName] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,11 +37,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || !authorName.trim()) return;
+    if (!content.trim()) return;
 
     setSubmitting(true);
     try {
-      const newComment = await addComment(postId, content.trim(), authorName.trim());
+      const newComment = await addComment(postId, content.trim());
       setComments((prev) => [newComment, ...prev]);
       setContent("");
     } catch (error) {
@@ -53,31 +55,36 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     <div className="space-y-6 pt-6 border-t">
       <h2 className="text-lg font-bold">댓글 {comments.length}개</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="text"
-          placeholder="닉네임"
-          value={authorName}
-          onChange={(e) => setAuthorName(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-        />
-        <textarea
-          placeholder="댓글을 입력하세요..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
-        />
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={submitting || !content.trim() || !authorName.trim()}
-            className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {submitting ? "등록 중..." : "댓글 등록"}
-          </button>
+      {isLoggedIn ? (
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="text-sm text-gray-600 font-medium">{nickname}</div>
+          <textarea
+            placeholder="댓글을 입력하세요..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={3}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={submitting || !content.trim()}
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {submitting ? "등록 중..." : "댓글 등록"}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="text-center py-4 bg-gray-50 rounded-lg">
+          <p className="text-sm text-gray-500">
+            <Link href="/login" className="text-teal-600 hover:underline">
+              로그인
+            </Link>
+            {" "}후 댓글을 작성할 수 있습니다.
+          </p>
         </div>
-      </form>
+      )}
 
       <div className="space-y-4">
         {comments.map((comment) => (

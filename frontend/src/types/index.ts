@@ -1,8 +1,8 @@
-export enum Category {
-  HUMOR = "HUMOR",
-  NEWS = "NEWS",
-  DOG = "DOG",
-  CAT = "CAT",
+export interface CategoryInfo {
+  id: number;
+  name: string;
+  label: string;
+  color: string;
 }
 
 export interface Post {
@@ -10,11 +10,14 @@ export interface Post {
   title: string;
   content: string;
   imageUrl: string | null;
-  category: Category;
+  category: string;
   likeCount: number;
   viewCount: number;
   createdAt: string;
   commentCount: number;
+  authorNickname: string | null;
+  bookmarked?: boolean;
+  liked?: boolean;
 }
 
 export interface Comment {
@@ -30,4 +33,20 @@ export interface PageResponse<T> {
   totalElements: number;
   last: boolean;
   number: number;
+}
+
+export interface User {
+  email: string;
+  nickname: string;
+}
+
+export interface CategoryRequestInfo {
+  id: number;
+  name: string;
+  label: string;
+  color: string;
+  status: string;
+  requesterNickname: string;
+  rejectionReason: string | null;
+  createdAt: string;
 }

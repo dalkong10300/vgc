@@ -1,6 +1,7 @@
 package com.vgc.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vgc.entity.User;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -22,6 +23,10 @@ public class Comment {
     @Column(nullable = false)
     private String authorName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private User author;
+
     private LocalDateTime createdAt;
 
     @PrePersist
@@ -40,4 +45,7 @@ public class Comment {
     public void setAuthorName(String authorName) { this.authorName = authorName; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    @JsonIgnore
+    public User getAuthor() { return author; }
+    public void setAuthor(User author) { this.author = author; }
 }
